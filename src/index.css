@@ -1,0 +1,22 @@
+body {
+  margin: 1em;
+}
+
+.user {
+  border: 1px solid black;
+  padding: 10px;
+  margin-top: 1em;
+}
+
+.user th,
+.user td {
+  text-align: left;
+}
+
+.user.online {
+  background-color: lightgreen;
+}
+
+.user.offline {
+  background-color: lightcoral;
+}

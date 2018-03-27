@@ -1,0 +1,9 @@
+{
+  "modules": true,
+  "plugins": {
+    "postcss-modules": {
+      "scopeBehaviour": "local",
+      "generateScopedName": "-[path][name]__[local]"
+    }
+  }
+}
