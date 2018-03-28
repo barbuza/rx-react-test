@@ -1,6 +1,4 @@
-import "rxjs/add/observable/combineLatest";
 import "rxjs/add/operator/map";
-import "rxjs/add/operator/switchMap";
 import { Observable } from "rxjs/Observable";
 
 import { DataSnapshot, FirebaseDatabase, Query, Reference } from "@firebase/database-types";

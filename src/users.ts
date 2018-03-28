@@ -1,13 +1,15 @@
-import * as baseDebug from "debug";
 import { action, computed, observable, reaction } from "mobx";
+import "rxjs/add/observable/combineLatest";
 import "rxjs/add/operator/observeOn";
+import "rxjs/add/operator/switchMap";
 import { Observable } from "rxjs/Observable";
 import { animationFrame } from "rxjs/scheduler/animationFrame";
 import { Subject } from "rxjs/Subject";
 
-import { db$ } from "./firebase";
+import { ObservableDb } from "./db";
 
-const debug = baseDebug("rx:users");
+// tslint:disable-next-line:no-var-requires
+const debug = require("debug")("rx:users");
 
 interface IUserData {
   name: string;
@@ -38,33 +40,39 @@ class UserStore {
     return this.userList.slice(0, this.limit);
   }
 
+  protected db$!: ObservableDb;
+
   constructor() {
-    const userLimit$: Subject<number> = new Subject();
-    reaction(() => this.limit, (limit) => {
-      userLimit$.next(limit);
-    });
+    import("./firebase").then((firebaseModule) => {
+      this.db$ = firebaseModule.db$;
 
-    const onlineOnly$: Subject<boolean> = new Subject();
-    reaction(() => this.onlineOnly, (onlineOnly) => {
-      onlineOnly$.next(onlineOnly);
-    });
-
-    const subscription = Observable.combineLatest(userLimit$, onlineOnly$)
-      .switchMap(([limit, onlineOnly]) =>
-        db$.ref(onlineOnly ? "online" : "users").orderByKey().limitToFirst(limit).keyList())
-      .switchMap((userIds) => Observable.combineLatest(userIds.map(this.observableUser)))
-      .observeOn(animationFrame)
-      .subscribe(this.setUsers);
-
-    if (module.hot) {
-      module.hot.dispose(() => {
-        debug("unsubscribe");
-        subscription.unsubscribe();
+      const userLimit$: Subject<number> = new Subject();
+      reaction(() => this.limit, (limit) => {
+        userLimit$.next(limit);
       });
-    }
 
-    userLimit$.next(this.limit);
-    onlineOnly$.next(this.onlineOnly);
+      const onlineOnly$: Subject<boolean> = new Subject();
+      reaction(() => this.onlineOnly, (onlineOnly) => {
+        onlineOnly$.next(onlineOnly);
+      });
+
+      const subscription = Observable.combineLatest(userLimit$, onlineOnly$)
+        .switchMap(([limit, onlineOnly]) =>
+          firebaseModule.db$.ref(onlineOnly ? "online" : "users").orderByKey().limitToFirst(limit).keyList())
+        .switchMap((userIds) => Observable.combineLatest(userIds.map(this.observableUser)))
+        .observeOn(animationFrame)
+        .subscribe(this.setUsers);
+
+      if (module.hot) {
+        module.hot.dispose(() => {
+          debug("unsubscribe");
+          subscription.unsubscribe();
+        });
+      }
+
+      userLimit$.next(this.limit);
+      onlineOnly$.next(this.onlineOnly);
+    });
   }
 
   @action
@@ -89,8 +97,8 @@ class UserStore {
   }
 
   protected observableUser = (uid: string): Observable<IUser> => {
-    const userData$ = db$.ref("user").child(uid).cast<IUserData>();
-    const online$ = db$.ref("online").child(uid).boolean();
+    const userData$ = this.db$.ref("user").child(uid).cast<IUserData>();
+    const online$ = this.db$.ref("online").child(uid).boolean();
 
     return Observable.combineLatest(
       userData$, online$,

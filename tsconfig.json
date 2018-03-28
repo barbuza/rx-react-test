@@ -1,7 +1,10 @@
 {
   "compilerOptions": {
-    "module": "commonjs",
-    "target": "es5",
+    "module": "esnext",
+    "moduleResolution": "node",
+    "target": "es6",
+    "noImplicitAny": true,
+    "noImplicitThis": true,
     "strict": true,
     "lib": [
       "es5",
@@ -17,7 +20,8 @@
     "noUnusedLocals": true,
     "noUnusedParameters": true,
     "noImplicitReturns": true,
-    "experimentalDecorators": true
+    "experimentalDecorators": true,
+    "importHelpers": true
   },
   "exclude": [
     "node_modules"

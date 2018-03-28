@@ -1,10 +1,10 @@
 import firebase from "@firebase/app";
 import "@firebase/database";
-import * as baseDebug from "debug";
 
 import { ObservableDb } from "./db";
 
-const debug = baseDebug("rx:firebase");
+// tslint:disable-next-line:no-var-requires
+const debug = require("debug")("rx:users");
 
 const firebaseApp = firebase.initializeApp({
   apiKey: "AIzaSyCAIRNKufWBCtdJmeTNDaJYiWi_f-ZBxL0",
