@@ -3,6 +3,9 @@
   "rules": {
     "no-submodule-imports": false,
     "no-implicit-dependencies": false,
-    "max-classes-per-file": false
+    "max-classes-per-file": false,
+    "semicolon": false,
+    "arrow-parens": false,
+    "object-literal-sort-keys": false
   }
 }

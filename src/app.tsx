@@ -23,51 +23,51 @@ function mapDispatch(dispatch: Dispatch<IReduxState>): IAppActions {
 }
 
 class AppComponent extends React.Component<IReduxState & IAppActions, object> {
-
   public render() {
     const { limit, onlineOnly, users, loading, toggleOnline } = this.props;
 
     return (
       <>
-        limitToFirst
-        &nbsp;
-        <button onClick={this.less} disabled={limit === 1}>-</button>
+        limitToFirst &nbsp;
+        <button onClick={this.less} disabled={limit === 1}>
+          -
+        </button>
         {limit}
-        <button onClick={this.more} disabled={limit === 5}>+</button>
-        &nbsp;
-        onlineOnly
+        <button onClick={this.more} disabled={limit === 5}>
+          +
+        </button>
+        &nbsp; onlineOnly
         <input type="checkbox" checked={onlineOnly} onChange={toggleOnline} />
         {loading && <>&nbsp;loading</>}
-        {users.map((user) => (
-          <table key={user.id} className={styles.user + " " + (user.online ? styles.online : styles.offline)}>
-            <tbody>
-              <tr>
-                <th>id</th>
+        <table className={styles.userList}>
+          <thead>
+            <tr>
+              <th>id</th>
+              <th>name</th>
+              <th>age</th>
+            </tr>
+          </thead>
+          <tbody>
+            {users.map(user => (
+              <tr key={user.id} className={user.online ? styles.online : styles.offline}>
                 <td>{user.id}</td>
-              </tr>
-              <tr>
-                <th>name</th>
                 <td>{user.name}</td>
-              </tr>
-              <tr>
-                <th>age</th>
                 <td>{user.age}</td>
               </tr>
-            </tbody>
-          </table>
-        ))}
+            ))}
+          </tbody>
+        </table>
       </>
     );
   }
 
   protected more = () => {
     this.props.setLimit(this.props.limit + 1);
-  }
+  };
 
   protected less = () => {
     this.props.setLimit(this.props.limit - 1);
-  }
-
+  };
 }
 
 export const App = connect(mapProps, mapDispatch)(AppComponent);

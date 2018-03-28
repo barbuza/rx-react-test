@@ -2,21 +2,22 @@ body {
   margin: 1em;
 }
 
-.user {
-  border: 1px solid black;
-  padding: 10px;
+.userList {
+  border-collapse: collapse;
   margin-top: 1em;
 }
 
-.user th,
-.user td {
+.userList th,
+.userList td {
   text-align: left;
+  border: 1px solid black;
+  padding: 2px 8px;
 }
 
-.user.online {
+.online {
   background-color: lightgreen;
 }
 
-.user.offline {
+.offline {
   background-color: lightcoral;
 }

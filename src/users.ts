@@ -29,7 +29,6 @@ export interface IUser extends IUserData {
 }
 
 class ReduxSubject<T> extends Subject<T> {
-
   constructor(protected reduxStore: Store<IReduxState>, protected project: (state: IReduxState) => T) {
     super();
     reduxStore.subscribe(this.trigger);
@@ -37,28 +36,34 @@ class ReduxSubject<T> extends Subject<T> {
 
   public trigger = () => {
     this.next(this.project(this.reduxStore.getState()));
-  }
-
+  };
 }
 
 class UserStore {
-
   protected db$!: ObservableDb;
 
   constructor() {
-    import("./firebase").then((firebaseModule) => {
+    import("./firebase").then(firebaseModule => {
       this.db$ = firebaseModule.db$;
 
-      const config$ = new ReduxSubject(store, (state) => ({ limit: state.limit, onlineOnly: state.onlineOnly }));
+      const config$ = new ReduxSubject(store, state => ({
+        limit: state.limit,
+        onlineOnly: state.onlineOnly,
+      }));
 
       const subscription = config$
         .debounceTime(200)
         .distinctUntilChanged(shallowEqual)
         .switchMap(({ limit, onlineOnly }) =>
-          firebaseModule.db$.ref(onlineOnly ? "online" : "users").orderByKey().limitToFirst(limit).keyList())
-        .switchMap((userIds) => Observable.combineLatest(userIds.map(this.observableUser)))
+          firebaseModule.db$
+            .ref(onlineOnly ? "online" : "users")
+            .orderByKey()
+            .limitToFirst(limit)
+            .keyList(),
+        )
+        .switchMap(userIds => Observable.combineLatest(userIds.map(this.observableUser)))
         .observeOn(animationFrame)
-        .subscribe((users) => {
+        .subscribe(users => {
           store.dispatch(createSetUsersAction(users));
         });
 
@@ -74,15 +79,21 @@ class UserStore {
   }
 
   protected observableUser = (uid: string): Observable<IUser> => {
-    const userData$ = this.db$.ref("user").child(uid).cast<IUserData>();
-    const online$ = this.db$.ref("online").child(uid).boolean();
+    const userData$ = this.db$
+      .ref("user")
+      .child(uid)
+      .cast<IUserData>();
+    const online$ = this.db$
+      .ref("online")
+      .child(uid)
+      .boolean();
 
-    return Observable.combineLatest(
-      userData$, online$,
-      (userData, online) => ({ ...userData, online, id: parseInt(uid, 10) }),
-    );
-  }
-
+    return Observable.combineLatest(userData$, online$, (userData, online) => ({
+      ...userData,
+      online,
+      id: parseInt(uid, 10),
+    }));
+  };
 }
 
 // tslint:disable-next-line:no-unused-expression

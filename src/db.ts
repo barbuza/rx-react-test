@@ -47,9 +47,9 @@ export class ObservableQuery {
   }
 
   public keyList(): Observable<string[]> {
-    return this.query$.map((snapshot) => {
+    return this.query$.map(snapshot => {
       const result: string[] = [];
-      snapshot.forEach((item) => {
+      snapshot.forEach(item => {
         if (item.key) {
           result.push(item.key);
         }
@@ -60,11 +60,11 @@ export class ObservableQuery {
   }
 
   public boolean(): Observable<boolean> {
-    return this.query$.map((x) => !!x.val());
+    return this.query$.map(x => !!x.val());
   }
 
   public cast<T>(): Observable<T> {
-    return this.query$.map((x) => x.val());
+    return this.query$.map(x => x.val());
   }
 
   protected get query$(): Observable<DataSnapshot> {
