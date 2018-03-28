@@ -1,12 +1,15 @@
-import { action, computed, observable, reaction } from "mobx";
 import "rxjs/add/observable/combineLatest";
+import "rxjs/add/operator/debounceTime";
+import "rxjs/add/operator/distinctUntilChanged";
 import "rxjs/add/operator/observeOn";
 import "rxjs/add/operator/switchMap";
 import { Observable } from "rxjs/Observable";
 import { animationFrame } from "rxjs/scheduler/animationFrame";
 import { Subject } from "rxjs/Subject";
 
+import { createSetUsersAction } from "./actions";
 import { ObservableDb } from "./db";
+import { store } from "./reducer";
 
 // tslint:disable-next-line:no-var-requires
 const debug = require("debug")("rx:users");
@@ -16,29 +19,12 @@ interface IUserData {
   age: number;
 }
 
-interface IUser extends IUserData {
+export interface IUser extends IUserData {
   id: number;
   online: boolean;
 }
 
 class UserStore {
-
-  @observable.ref
-  public isLoading: boolean = true;
-
-  @observable.ref
-  public onlineOnly: boolean = false;
-
-  @observable.ref
-  public limit: number = 4;
-
-  @observable.ref
-  protected userList: IUser[] = [];
-
-  @computed
-  public get users(): IUser[] {
-    return this.userList.slice(0, this.limit);
-  }
 
   protected db$!: ObservableDb;
 
@@ -47,21 +33,25 @@ class UserStore {
       this.db$ = firebaseModule.db$;
 
       const userLimit$: Subject<number> = new Subject();
-      reaction(() => this.limit, (limit) => {
-        userLimit$.next(limit);
+      store.subscribe(() => {
+        userLimit$.next(store.getState().limit);
       });
 
       const onlineOnly$: Subject<boolean> = new Subject();
-      reaction(() => this.onlineOnly, (onlineOnly) => {
-        onlineOnly$.next(onlineOnly);
+      store.subscribe(() => {
+        onlineOnly$.next(store.getState().onlineOnly);
       });
 
-      const subscription = Observable.combineLatest(userLimit$, onlineOnly$)
+      const subscription = Observable
+        .combineLatest(userLimit$.distinctUntilChanged(), onlineOnly$.distinctUntilChanged())
+        .debounceTime(200)
         .switchMap(([limit, onlineOnly]) =>
           firebaseModule.db$.ref(onlineOnly ? "online" : "users").orderByKey().limitToFirst(limit).keyList())
         .switchMap((userIds) => Observable.combineLatest(userIds.map(this.observableUser)))
         .observeOn(animationFrame)
-        .subscribe(this.setUsers);
+        .subscribe((users) => {
+          store.dispatch(createSetUsersAction(users));
+        });
 
       if (module.hot) {
         module.hot.dispose(() => {
@@ -70,30 +60,9 @@ class UserStore {
         });
       }
 
-      userLimit$.next(this.limit);
-      onlineOnly$.next(this.onlineOnly);
+      userLimit$.next(store.getState().limit);
+      onlineOnly$.next(store.getState().onlineOnly);
     });
-  }
-
-  @action
-  public toggleOnlineOnly = () => {
-    debug("toggle online");
-    this.isLoading = true;
-    this.onlineOnly = !this.onlineOnly;
-  }
-
-  @action
-  public setLimit = (limit: number) => {
-    debug("set limit");
-    this.isLoading = true;
-    this.limit = limit;
-  }
-
-  @action
-  protected setUsers = (newUsers: IUser[]) => {
-    debug("set users");
-    this.isLoading = false;
-    this.userList = newUsers;
   }
 
   protected observableUser = (uid: string): Observable<IUser> => {
@@ -108,4 +77,5 @@ class UserStore {
 
 }
 
-export const users = new UserStore();
+// tslint:disable-next-line:no-unused-expression
+new UserStore();

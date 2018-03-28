@@ -1,28 +1,44 @@
-import { action } from "mobx";
-import { observer } from "mobx-react";
 import * as React from "react";
-import { render } from "react-dom";
+import { connect } from "react-redux";
+import { Dispatch } from "redux";
 
+import { createSetLimitAction, createToggleOnlineAction } from "./actions";
 import * as styles from "./index.css";
-import { users } from "./users";
+import { IReduxState } from "./reducer";
 
-@observer
-class App extends React.Component<object, object> {
+interface IAppActions {
+  setLimit: typeof createSetLimitAction;
+  toggleOnline: typeof createToggleOnlineAction;
+}
+
+function mapProps(state: IReduxState): IReduxState {
+  return state;
+}
+
+function mapDispatch(dispatch: Dispatch<IReduxState>): IAppActions {
+  return {
+    setLimit: (limit: number) => dispatch(createSetLimitAction(limit)),
+    toggleOnline: () => dispatch(createToggleOnlineAction()),
+  };
+}
+
+class AppComponent extends React.Component<IReduxState & IAppActions, object> {
 
   public render() {
+    const { limit, onlineOnly, users, loading, toggleOnline } = this.props;
 
     return (
       <>
         limitToFirst
         &nbsp;
-        <button onClick={this.less} disabled={users.limit === 1}>-</button>
-        {users.limit}
-        <button onClick={this.more} disabled={users.limit === 5}>+</button>
+        <button onClick={this.less} disabled={limit === 1}>-</button>
+        {limit}
+        <button onClick={this.more} disabled={limit === 5}>+</button>
         &nbsp;
         onlineOnly
-        <input type="checkbox" checked={users.onlineOnly} onChange={users.toggleOnlineOnly} />
-        {users.isLoading && <>&nbsp;loading</>}
-        {users.users.map((user) => (
+        <input type="checkbox" checked={onlineOnly} onChange={toggleOnline} />
+        {loading && <>&nbsp;loading</>}
+        {users.map((user) => (
           <table key={user.id} className={styles.user + " " + (user.online ? styles.online : styles.offline)}>
             <tbody>
               <tr>
@@ -44,19 +60,20 @@ class App extends React.Component<object, object> {
     );
   }
 
-  @action
   protected more = () => {
-    if (users.limit < 5) {
-      users.setLimit(users.limit + 1);
+    const { limit, setLimit } = this.props;
+    if (limit < 5) {
+      setLimit(limit + 1);
     }
   }
 
   protected less = () => {
-    if (users.limit > 1) {
-      users.setLimit(users.limit - 1);
+    const { limit, setLimit } = this.props;
+    if (limit > 1) {
+      setLimit(limit - 1);
     }
   }
 
 }
 
-render(<App />, document.getElementById("root"));
+export const App = connect(mapProps, mapDispatch)(AppComponent);
