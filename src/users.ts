@@ -1,3 +1,4 @@
+import { Store } from "redux";
 import "rxjs/add/observable/combineLatest";
 import "rxjs/add/operator/debounceTime";
 import "rxjs/add/operator/distinctUntilChanged";
@@ -9,7 +10,7 @@ import { Subject } from "rxjs/Subject";
 
 import { createSetUsersAction } from "./actions";
 import { ObservableDb } from "./db";
-import { store } from "./reducer";
+import { IReduxState, store } from "./reducer";
 
 // tslint:disable-next-line:no-var-requires
 const debug = require("debug")("rx:users");
@@ -24,6 +25,18 @@ export interface IUser extends IUserData {
   online: boolean;
 }
 
+class ReduxSubject<T> extends Subject<T> {
+
+  constructor(protected reduxStore: Store<IReduxState>, protected project: (state: IReduxState) => T) {
+    super();
+    reduxStore.subscribe(this.trigger);
+  }
+
+  public trigger = () => {
+    this.next(this.project(this.reduxStore.getState()));
+  }
+}
+
 class UserStore {
 
   protected db$!: ObservableDb;
@@ -32,15 +45,8 @@ class UserStore {
     import("./firebase").then((firebaseModule) => {
       this.db$ = firebaseModule.db$;
 
-      const userLimit$: Subject<number> = new Subject();
-      store.subscribe(() => {
-        userLimit$.next(store.getState().limit);
-      });
-
-      const onlineOnly$: Subject<boolean> = new Subject();
-      store.subscribe(() => {
-        onlineOnly$.next(store.getState().onlineOnly);
-      });
+      const userLimit$ = new ReduxSubject(store, (state) => state.limit);
+      const onlineOnly$ = new ReduxSubject(store, (state) => state.onlineOnly);
 
       const subscription = Observable
         .combineLatest(userLimit$.distinctUntilChanged(), onlineOnly$.distinctUntilChanged())
@@ -53,15 +59,15 @@ class UserStore {
           store.dispatch(createSetUsersAction(users));
         });
 
+      userLimit$.trigger();
+      onlineOnly$.trigger();
+
       if (module.hot) {
         module.hot.dispose(() => {
           debug("unsubscribe");
           subscription.unsubscribe();
         });
       }
-
-      userLimit$.next(store.getState().limit);
-      onlineOnly$.next(store.getState().onlineOnly);
     });
   }
 

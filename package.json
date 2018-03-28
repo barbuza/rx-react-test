@@ -1,10 +1,11 @@
 {
   "private": true,
   "scripts": {
-    "precommit": "lint-staged",
+    "precommit": "tsc --noEmit && lint-staged",
     "start": "rimraf dist && parcel src/index.html",
     "build": "rimraf dist && parcel build --public-url ./ src/index.html",
-    "serve": "npm run-script build && node serve"
+    "serve": "npm run-script build && node serve",
+    "lint": "tsc --noEmit && tslint -p tsconfig.json"
   },
   "lint-staged": {
     "*.{ts,tsx}": [
