@@ -15,6 +15,9 @@ import { IReduxState, store } from "./reducer";
 // tslint:disable-next-line:no-var-requires
 const debug = require("debug")("rx:users");
 
+// tslint:disable-next-line:no-var-requires
+const shallowEqual = require("shallowequal");
+
 interface IUserData {
   name: string;
   age: number;
@@ -35,6 +38,7 @@ class ReduxSubject<T> extends Subject<T> {
   public trigger = () => {
     this.next(this.project(this.reduxStore.getState()));
   }
+
 }
 
 class UserStore {
@@ -45,13 +49,12 @@ class UserStore {
     import("./firebase").then((firebaseModule) => {
       this.db$ = firebaseModule.db$;
 
-      const userLimit$ = new ReduxSubject(store, (state) => state.limit);
-      const onlineOnly$ = new ReduxSubject(store, (state) => state.onlineOnly);
+      const config$ = new ReduxSubject(store, (state) => ({ limit: state.limit, onlineOnly: state.onlineOnly }));
 
-      const subscription = Observable
-        .combineLatest(userLimit$.distinctUntilChanged(), onlineOnly$.distinctUntilChanged())
+      const subscription = config$
         .debounceTime(200)
-        .switchMap(([limit, onlineOnly]) =>
+        .distinctUntilChanged(shallowEqual)
+        .switchMap(({ limit, onlineOnly }) =>
           firebaseModule.db$.ref(onlineOnly ? "online" : "users").orderByKey().limitToFirst(limit).keyList())
         .switchMap((userIds) => Observable.combineLatest(userIds.map(this.observableUser)))
         .observeOn(animationFrame)
@@ -59,8 +62,7 @@ class UserStore {
           store.dispatch(createSetUsersAction(users));
         });
 
-      userLimit$.trigger();
-      onlineOnly$.trigger();
+      config$.trigger();
 
       if (module.hot) {
         module.hot.dispose(() => {

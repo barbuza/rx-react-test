@@ -25,7 +25,7 @@ export const store = createStore<IReduxState>((state = defaultState, action) => 
     args.push(rest);
   }
   // tslint:disable-next-line:no-console
-  console.info(...args);
+  console.group(...args);
 
   let nextState = state;
 
@@ -44,12 +44,15 @@ export const store = createStore<IReduxState>((state = defaultState, action) => 
   } else if (isSetLimitAction(action)) {
     nextState = {
       ...state,
-      limit: action.limit,
+      limit: Math.max(1, Math.min(5, action.limit)),
       loading: true,
     };
   }
 
   logDiff(state, nextState);
+  // tslint:disable-next-line:no-console
+  console.groupEnd();
+
   return nextState;
 });
 

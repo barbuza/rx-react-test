@@ -61,17 +61,11 @@ class AppComponent extends React.Component<IReduxState & IAppActions, object> {
   }
 
   protected more = () => {
-    const { limit, setLimit } = this.props;
-    if (limit < 5) {
-      setLimit(limit + 1);
-    }
+    this.props.setLimit(this.props.limit + 1);
   }
 
   protected less = () => {
-    const { limit, setLimit } = this.props;
-    if (limit > 1) {
-      setLimit(limit - 1);
-    }
+    this.props.setLimit(this.props.limit - 1);
   }
 
 }
