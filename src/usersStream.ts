@@ -9,20 +9,30 @@ import { createSetUsersAction, ISetUsersAction } from "./actions";
 import { ObservableDb } from "./db";
 import { IReduxState } from "./reducer";
 
-interface IUserData {
+export interface IUser {
   name: string;
   age: number;
-}
-
-export interface IUser extends IUserData {
   id: number;
   online: boolean;
 }
 
-const observableUserList = (db$: ObservableDb) => (options: {
+interface IUserListOptions {
   online: boolean;
   limit: number;
-}): Observable<string[]> => {
+}
+
+function userListOptions(state: IReduxState): IUserListOptions {
+  return {
+    online: state.onlineOnly,
+    limit: state.limit,
+  };
+}
+
+function userListOptionsEqual(a: IUserListOptions, b: IUserListOptions): boolean {
+  return a.online === b.online && a.limit === b.limit;
+}
+
+const observableUserList = (db$: ObservableDb) => (options: IUserListOptions): Observable<string[]> => {
   return db$
     .ref(options.online ? "online" : "users")
     .orderByKey()
@@ -61,8 +71,8 @@ export function usersStream(state$: Observable<IReduxState>): Observable<ISetUse
     .map(x => x.db$)
     .switchMap(db$ =>
       state$
-        .map(x => ({ online: x.onlineOnly, limit: x.limit }))
-        .distinctUntilChanged((a, b) => a.online === b.online && a.limit === b.limit)
+        .map(userListOptions)
+        .distinctUntilChanged(userListOptionsEqual)
         .switchMap(observableUserList(db$))
         .switchMap(userIds => Observable.combineLatest(userIds.map(observableUser(db$))))
         .map(createSetUsersAction),
