@@ -4,7 +4,7 @@ import "@firebase/database";
 import { ObservableDb } from "./db";
 
 // tslint:disable-next-line:no-var-requires
-const debug = require("debug")("rx:users");
+const debug = require("debug")("rx:firebase");
 
 const firebaseApp = firebase.initializeApp(
   {

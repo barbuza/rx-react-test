@@ -1,8 +1,7 @@
-import { createStore } from "redux";
+import { Action } from "redux";
 
 import { isSetLimitAction, isSetUsersAction, isToggleOnlineAction } from "./actions";
-import { logDiff } from "./deepDiff";
-import { IUser } from "./users";
+import { IUser } from "./usersStream";
 
 export interface IReduxState {
   loading: boolean;
@@ -18,46 +17,31 @@ const defaultState: IReduxState = {
   users: [],
 };
 
-export const store = createStore<IReduxState>((state = defaultState, action) => {
-  const { type, ...rest } = action;
-  const args: any[] = [`%c${type}`, "font-weight: bold"];
-  if (Object.keys(rest).length) {
-    args.push(rest);
-  }
-  // tslint:disable-next-line:no-console
-  console.group(...args);
-
-  let nextState = state;
-
+export function reducer(state: IReduxState = defaultState, action: Action) {
   if (isSetUsersAction(action)) {
-    nextState = {
+    return {
       ...state,
       loading: false,
       users: action.users,
     };
   } else if (isToggleOnlineAction(action)) {
-    nextState = {
+    return {
       ...state,
       loading: true,
       onlineOnly: !state.onlineOnly,
     };
   } else if (isSetLimitAction(action)) {
-    nextState = {
+    return {
       ...state,
       limit: Math.max(1, Math.min(5, action.limit)),
       loading: true,
     };
   }
-
-  logDiff(state, nextState);
-  // tslint:disable-next-line:no-console
-  console.groupEnd();
-
-  return nextState;
-});
+  return state;
+}
 
 if (module.hot) {
   module.hot.dispose(() => {
-    throw new Error("reducer doesnt support hmr");
+    throw new Error("no hmr here");
   });
 }

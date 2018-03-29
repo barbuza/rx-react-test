@@ -6,12 +6,11 @@
     "build": "rimraf dist && parcel build --public-url ./ src/index.html",
     "serve": "npm run-script build && node serve",
     "lint": "tsc --noEmit && tslint -p tsconfig.json --format stylish",
-    "format": "prettier --write src/*.{ts,tsx,css}"
+    "format": "prettier --write src/*.{ts,tsx,css}",
+    "ts": "ts-node -O '{\"module\":\"commonjs\"}'"
   },
   "lint-staged": {
-    "*.{ts,tsx}": [
-      "tslint --format stylish"
-    ]
+    "*.{ts,tsx}": ["tslint --format stylish"]
   },
   "devDependencies": {
     "@types/debug": "0.0.30",
@@ -20,15 +19,16 @@
     "@types/react": "^16.0.41",
     "@types/react-dom": "^16.0.4",
     "@types/react-redux": "^5.0.15",
-    "@types/shallowequal": "^0.2.1",
     "express": "^4.16.3",
     "express-static-gzip": "^0.3.2",
     "husky": "^0.14.3",
     "lint-staged": "^7.0.0",
     "parcel-bundler": "^1.6.2",
     "parcel-plugin-compress": "^1.0.3",
+    "prettier": "^1.11.1",
     "postcss-modules": "^1.1.0",
     "rimraf": "^2.6.2",
+    "ts-node": "^5.0.1",
     "tslint": "^5.9.1",
     "typescript": "^2.8.1"
   },
@@ -39,12 +39,10 @@
     "@firebase/database-types": "^0.2.0",
     "debug": "^3.1.0",
     "deep-diff": "^0.3.8",
-    "prettier": "^1.11.1",
     "react": "^16.2.0",
     "react-dom": "^16.2.0",
     "react-redux": "^5.0.7",
     "redux": "^3.7.2",
-    "rxjs": "^5.5.8",
-    "shallowequal": "^1.0.2"
+    "rxjs": "^5.5.8"
   }
 }

@@ -21,9 +21,8 @@
     "noUnusedParameters": true,
     "noImplicitReturns": true,
     "experimentalDecorators": true,
-    "importHelpers": true
+    "importHelpers": true,
+    "noEmitOnError": true
   },
-  "exclude": [
-    "node_modules"
-  ]
+  "exclude": ["node_modules"]
 }

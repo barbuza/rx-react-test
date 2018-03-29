@@ -1,6 +1,6 @@
 import { Action } from "redux";
 
-import { IUser } from "./users";
+import { IUser } from "./usersStream";
 
 export const SET_USERS = "SET_USERS";
 

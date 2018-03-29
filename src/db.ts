@@ -63,12 +63,38 @@ export class ObservableQuery {
     return this.query$.map(x => !!x.val());
   }
 
-  public cast<T>(): Observable<T> {
+  public unsafeCast<T>(): Observable<T> {
     return this.query$.map(x => x.val());
   }
 
+  public number<T>(orElse: T): Observable<number | T> {
+    return this.query$.map(x => {
+      const val = x.val();
+      if (typeof val === "number") {
+        return val;
+      }
+      if (typeof val === "string") {
+        return parseInt(val, 10);
+      }
+      return orElse;
+    });
+  }
+
+  public string<T>(orElse: T): Observable<string | T> {
+    return this.query$.map(x => {
+      const val = x.val();
+      if (typeof val === "string") {
+        return val;
+      }
+      if (typeof val === "number") {
+        return val.toString(10);
+      }
+      return orElse;
+    });
+  }
+
   protected get query$(): Observable<DataSnapshot> {
-    return Observable.create((f: any) => {
+    return new Observable(f => {
       const fn = (snapshot: DataSnapshot | null) => {
         if (snapshot) {
           f.next(snapshot);
@@ -78,7 +104,7 @@ export class ObservableQuery {
       return () => {
         setTimeout(() => {
           this.query.off("value", fn);
-        }, 0);
+        });
       };
     });
   }

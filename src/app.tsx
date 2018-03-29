@@ -5,6 +5,20 @@ import { Dispatch } from "redux";
 import { createSetLimitAction, createToggleOnlineAction } from "./actions";
 import * as styles from "./index.css";
 import { IReduxState } from "./reducer";
+import { IUser } from "./usersStream";
+
+class User extends React.PureComponent<IUser, object> {
+  public render() {
+    const { id, name, age, online } = this.props;
+    return (
+      <tr className={online ? styles.online : styles.offline}>
+        <td>{id}</td>
+        <td>{name}</td>
+        <td>{age}</td>
+      </tr>
+    );
+  }
+}
 
 interface IAppActions {
   setLimit: typeof createSetLimitAction;
@@ -47,15 +61,7 @@ class AppComponent extends React.Component<IReduxState & IAppActions, object> {
               <th>age</th>
             </tr>
           </thead>
-          <tbody>
-            {users.map(user => (
-              <tr key={user.id} className={user.online ? styles.online : styles.offline}>
-                <td>{user.id}</td>
-                <td>{user.name}</td>
-                <td>{user.age}</td>
-              </tr>
-            ))}
-          </tbody>
+          <tbody>{users.map(user => <User key={user.id} {...user} />)}</tbody>
         </table>
       </>
     );
