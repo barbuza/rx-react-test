@@ -10,7 +10,9 @@
     "ts": "ts-node -O '{\"module\":\"commonjs\"}'"
   },
   "lint-staged": {
-    "*.{ts,tsx}": ["tslint --format stylish"]
+    "*.{ts,tsx}": [
+      "tslint --format stylish"
+    ]
   },
   "devDependencies": {
     "@types/debug": "0.0.30",
@@ -25,8 +27,8 @@
     "lint-staged": "^7.0.0",
     "parcel-bundler": "^1.6.2",
     "parcel-plugin-compress": "^1.0.3",
-    "prettier": "^1.11.1",
     "postcss-modules": "^1.1.0",
+    "prettier": "^1.11.1",
     "rimraf": "^2.6.2",
     "ts-node": "^5.0.1",
     "tslint": "^5.9.1",
@@ -37,6 +39,7 @@
     "@firebase/app-types": "^0.1.2",
     "@firebase/database": "^0.2.1",
     "@firebase/database-types": "^0.2.0",
+    "@types/parcel-env": "^0.0.0",
     "debug": "^3.1.0",
     "deep-diff": "^0.3.8",
     "react": "^16.2.0",
