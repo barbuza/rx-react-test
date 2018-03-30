@@ -1,8 +1,9 @@
+import { Omit } from "react-redux";
 import { Action } from "redux";
 
-import { IUser } from "./usersStream";
+import { IUser } from "./streams/users";
 
-export const SET_USERS = "SET_USERS";
+const SET_USERS = "SET_USERS";
 
 export interface ISetUsersAction extends Action {
   type: typeof SET_USERS;
@@ -20,7 +21,7 @@ export function createSetUsersAction(users: IUser[]): ISetUsersAction {
   };
 }
 
-export const SET_LIMIT = "SET_LIMIT";
+const SET_LIMIT = "SET_LIMIT";
 
 export interface ISetLimitAction extends Action {
   type: typeof SET_LIMIT;
@@ -38,7 +39,7 @@ export function createSetLimitAction(limit: number): ISetLimitAction {
   };
 }
 
-export const TOGGLE_ONLINE = "TOGGLE_ONLINE";
+const TOGGLE_ONLINE = "TOGGLE_ONLINE";
 
 export interface IToggleOnlineAction extends Action {
   type: typeof TOGGLE_ONLINE;
@@ -51,5 +52,77 @@ export function isToggleOnlineAction(action: Action): action is IToggleOnlineAct
 export function createToggleOnlineAction(): IToggleOnlineAction {
   return {
     type: TOGGLE_ONLINE,
+  };
+}
+
+const ADD_USER = "ADD_USER";
+
+export interface IAddUserAction extends Action {
+  type: typeof ADD_USER;
+  user: Omit<Omit<IUser, "id">, "online">;
+}
+
+export function createAddUserAction(user: Omit<Omit<IUser, "id">, "online">): IAddUserAction {
+  return {
+    type: ADD_USER,
+    user,
+  };
+}
+
+export function isAddUserAction(action: Action): action is IAddUserAction {
+  return action.type === ADD_USER;
+}
+
+const USER_ADDED = "USER_ADDED";
+
+export interface IUserAddedAction extends Action {
+  type: typeof USER_ADDED;
+  user: IUser;
+}
+
+export function isUserAddedAction(action: Action): action is IUserAddedAction {
+  return action.type === USER_ADDED;
+}
+
+export function createUserAddedAction(user: IUser): IUserAddedAction {
+  return {
+    type: USER_ADDED,
+    user,
+  };
+}
+
+const REMOVE_USER = "REMOVE_USER";
+
+export interface IRemoveUserAction {
+  type: typeof REMOVE_USER;
+  id: number;
+}
+
+export function isRemoveUserAction(action: Action): action is IRemoveUserAction {
+  return action.type === REMOVE_USER;
+}
+
+export function createRemoveUserAction(id: number): IRemoveUserAction {
+  return {
+    type: REMOVE_USER,
+    id,
+  };
+}
+
+const USER_REMOVED = "USER_REMOVED";
+
+export interface IUserRemovedAction {
+  type: typeof USER_REMOVED;
+  id: number;
+}
+
+export function isUserRemovedAction(action: Action): action is IUserRemovedAction {
+  return action.type === USER_REMOVED;
+}
+
+export function createUserRemovedAction(id: number): IUserRemovedAction {
+  return {
+    type: USER_REMOVED,
+    id,
   };
 }

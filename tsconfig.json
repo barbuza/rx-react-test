@@ -22,7 +22,8 @@
     "noImplicitReturns": true,
     "experimentalDecorators": true,
     "importHelpers": true,
-    "noEmitOnError": true
+    "noEmitOnError": true,
+    "esModuleInterop": true
   },
   "exclude": ["node_modules"]
 }

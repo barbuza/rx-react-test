@@ -1,33 +1,64 @@
-import { Action, Reducer, Store, StoreEnhancerStoreCreator } from "redux";
+import { Action, AnyAction, Dispatch, Reducer, Store, StoreEnhancerStoreCreator } from "redux";
 import { BehaviorSubject } from "rxjs/BehaviorSubject";
 import { Observable } from "rxjs/Observable";
+import { Subject } from "rxjs/Subject";
 import { Subscription } from "rxjs/Subscription";
+
+import { disposeReactor } from "./disposeReactor";
 
 // tslint:disable-next-line:no-var-requires
 const debug = require("debug")("rx:reactor");
 
-type StreamCreator<S> = (state$: Observable<S>) => Observable<Action>;
-
 export interface IReactorStore<S> extends Store<S> {
-  dispose(): void;
+  [disposeReactor](): void;
 }
 
 export type ReactorStoreCreator<S> = (reducer: Reducer<S>, preloadedState?: S) => IReactorStore<S>;
 
 export type ReactorStoreEnhancer<S> = (next: StoreEnhancerStoreCreator<S>) => ReactorStoreCreator<S>;
 
-export function createStateReactor<S>(...streamCreators: Array<StreamCreator<S>>): ReactorStoreEnhancer<S> {
+export interface IStreamApi<S> {
+  action$: Observable<Action>;
+  state$: Observable<S>;
+  dispatch: Dispatch<S>;
+}
+
+export type StreamCreator<S> = (api: IStreamApi<S>) => Subscription;
+
+export function isReactorStore<S>(store: Store<S>): store is IReactorStore<S> {
+  return disposeReactor in store;
+}
+
+export function createReactor<S>(...streamCreators: Array<StreamCreator<S>>): ReactorStoreEnhancer<S> {
   return (next: StoreEnhancerStoreCreator<S>): ReactorStoreCreator<S> => {
     return (reducer: Reducer<S>, preloadedState?: S) => {
-      const store = next(reducer, preloadedState);
+      const action$ = new Subject<Action>();
+      const wrappedReducer = (state: S, action: AnyAction): S => {
+        const nextState = reducer(state, action);
+        setTimeout(() => {
+          action$.next(action);
+        });
+        return nextState;
+      };
+
+      const store = next(wrappedReducer, preloadedState);
+
       const state$ = new BehaviorSubject(store.getState());
       store.subscribe(() => {
         state$.next(store.getState());
       });
+
+      const api: IStreamApi<S> = {
+        action$,
+        state$,
+        dispatch: store.dispatch,
+      };
+
       const subs: Array<{ sub: Subscription; fn: any }> = [];
       for (const createStream of streamCreators) {
+        debug("start %s", (createStream as any).name);
         subs.push({
-          sub: createStream(state$).subscribe(store.dispatch),
+          sub: createStream(api),
           fn: createStream,
         });
       }
@@ -36,8 +67,11 @@ export function createStateReactor<S>(...streamCreators: Array<StreamCreator<S>>
           debug("dispose %s", sub.fn.name);
           sub.sub.unsubscribe();
         }
+        if (isReactorStore(store)) {
+          store[disposeReactor]();
+        }
       }
-      return { ...store, dispose };
+      return { ...store, [disposeReactor]: dispose };
     };
   };
 }

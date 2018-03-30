@@ -1,13 +1,16 @@
 import "rxjs/add/observable/combineLatest";
 import "rxjs/add/observable/fromPromise";
+import "rxjs/add/observable/of";
 import "rxjs/add/operator/distinctUntilChanged";
 import "rxjs/add/operator/map";
 import "rxjs/add/operator/switchMap";
 import { Observable } from "rxjs/Observable";
+import { Subscription } from "rxjs/Subscription";
 
-import { createSetUsersAction, ISetUsersAction } from "./actions";
-import { ObservableDb } from "./db";
-import { IReduxState } from "./reducer";
+import { createSetUsersAction } from "../actions";
+import { IStreamApi } from "../createReactor";
+import { ObservableDb } from "../db";
+import { IReduxState } from "../reducer";
 
 export interface IUser {
   name: string;
@@ -41,24 +44,17 @@ const observableUserList = (db$: ObservableDb) => (options: IUserListOptions): O
 };
 
 const observableUser = (db$: ObservableDb) => (uid: string): Observable<IUser> => {
-  const age$ = db$
+  const userData$ = db$
     .ref("user")
     .child(uid)
-    .child("age")
-    .number(0);
-
-  const name$ = db$
-    .ref("user")
-    .child(uid)
-    .child("name")
-    .string("unknown");
+    .cast({ name: "unknown", age: 0 });
 
   const online$ = db$
     .ref("online")
     .child(uid)
     .boolean();
 
-  return Observable.combineLatest(age$, name$, online$, (age, name, online) => ({
+  return Observable.combineLatest(userData$, online$, ({ age, name }, online) => ({
     age,
     name,
     online,
@@ -66,15 +62,18 @@ const observableUser = (db$: ObservableDb) => (uid: string): Observable<IUser> =
   }));
 };
 
-export function usersStream(state$: Observable<IReduxState>): Observable<ISetUsersAction> {
-  return Observable.fromPromise(import("./firebase"))
+export function usersStream(api: IStreamApi<IReduxState>): Subscription {
+  return Observable.fromPromise(import("../firebase"))
     .map(x => x.db$)
     .switchMap(db$ =>
-      state$
+      api.state$
         .map(userListOptions)
         .distinctUntilChanged(userListOptionsEqual)
         .switchMap(observableUserList(db$))
-        .switchMap(userIds => Observable.combineLatest(userIds.map(observableUser(db$))))
+        .switchMap(
+          userIds => (userIds.length ? Observable.combineLatest(userIds.map(observableUser(db$))) : Observable.of([])),
+        )
         .map(createSetUsersAction),
-    );
+    )
+    .subscribe(api.dispatch);
 }

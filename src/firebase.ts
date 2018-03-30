@@ -16,7 +16,7 @@ const firebaseApp = firebase.initializeApp(
   Math.random().toString(16),
 );
 
-const db = firebaseApp.database!();
+export const db = firebaseApp.database!();
 
 export const db$ = new ObservableDb(db);
 

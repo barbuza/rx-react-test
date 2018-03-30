@@ -15,6 +15,17 @@ export class ObservableDb {
   }
 }
 
+const withDefaults = <T extends { [key: string]: any }>(defaultValue: T) => (value: any): T => {
+  if (typeof value !== "object" || value === null) {
+    return defaultValue;
+  }
+  const result: T = {} as any;
+  for (const key of Object.keys(defaultValue)) {
+    result[key] = typeof defaultValue[key] === typeof value[key] ? value[key] : defaultValue[key];
+  }
+  return result;
+};
+
 export class ObservableQuery {
   protected readonly query: Query;
 
@@ -65,6 +76,10 @@ export class ObservableQuery {
 
   public unsafeCast<T>(): Observable<T> {
     return this.query$.map(x => x.val());
+  }
+
+  public cast<T extends { [key: string]: any }>(orElse: T): Observable<T> {
+    return this.query$.map(x => x.val()).map(withDefaults(orElse));
   }
 
   public number<T>(orElse: T): Observable<number | T> {

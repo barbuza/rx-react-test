@@ -1,13 +1,26 @@
+import { Chance } from "chance";
 import * as React from "react";
-import { connect } from "react-redux";
+import { connect, Omit } from "react-redux";
 import { Dispatch } from "redux";
 
-import { createSetLimitAction, createToggleOnlineAction } from "./actions";
+import { createAddUserAction, createRemoveUserAction, createSetLimitAction, createToggleOnlineAction } from "./actions";
 import * as styles from "./index.css";
 import { IReduxState } from "./reducer";
-import { IUser } from "./usersStream";
+import { IUser } from "./streams/users";
 
-class User extends React.PureComponent<IUser, object> {
+const chance = Chance();
+
+interface IUserDispatch {
+  removeUser: typeof createRemoveUserAction;
+}
+
+function mapUserDispatch(dispatch: Dispatch<IReduxState>): IUserDispatch {
+  return {
+    removeUser: (id: number) => dispatch(createRemoveUserAction(id)),
+  };
+}
+
+class UserComponent extends React.PureComponent<IUser & IUserDispatch, object> {
   public render() {
     const { id, name, age, online } = this.props;
     return (
@@ -15,30 +28,41 @@ class User extends React.PureComponent<IUser, object> {
         <td>{id}</td>
         <td>{name}</td>
         <td>{age}</td>
+        <td>
+          <button onClick={this.remove}>remove</button>
+        </td>
       </tr>
     );
   }
+
+  protected remove = () => {
+    this.props.removeUser(this.props.id);
+  };
 }
 
-interface IAppActions {
+const User = connect(null, mapUserDispatch)(UserComponent);
+
+interface IAppDispatch {
   setLimit: typeof createSetLimitAction;
   toggleOnline: typeof createToggleOnlineAction;
+  addUser: typeof createAddUserAction;
 }
 
 function mapProps(state: IReduxState): IReduxState {
   return state;
 }
 
-function mapDispatch(dispatch: Dispatch<IReduxState>): IAppActions {
+function mapDispatch(dispatch: Dispatch<IReduxState>): IAppDispatch {
   return {
     setLimit: (limit: number) => dispatch(createSetLimitAction(limit)),
     toggleOnline: () => dispatch(createToggleOnlineAction()),
+    addUser: (user: Omit<Omit<IUser, "id">, "online">) => dispatch(createAddUserAction(user)),
   };
 }
 
-class AppComponent extends React.Component<IReduxState & IAppActions, object> {
+class AppComponent extends React.Component<IReduxState & IAppDispatch, object> {
   public render() {
-    const { limit, onlineOnly, users, loading, toggleOnline } = this.props;
+    const { limit, onlineOnly, users, loading, toggleOnline, adding } = this.props;
 
     return (
       <>
@@ -47,7 +71,7 @@ class AppComponent extends React.Component<IReduxState & IAppActions, object> {
           -
         </button>
         {limit}
-        <button onClick={this.more} disabled={limit === 5}>
+        <button onClick={this.more} disabled={limit === 50}>
           +
         </button>
         &nbsp; onlineOnly
@@ -59,10 +83,16 @@ class AppComponent extends React.Component<IReduxState & IAppActions, object> {
               <th>id</th>
               <th>name</th>
               <th>age</th>
+              <th>&nbsp;</th>
             </tr>
           </thead>
           <tbody>{users.map(user => <User key={user.id} {...user} />)}</tbody>
         </table>
+        <div>
+          <button disabled={adding} onClick={this.addUser}>
+            add user
+          </button>
+        </div>
       </>
     );
   }
@@ -73,6 +103,13 @@ class AppComponent extends React.Component<IReduxState & IAppActions, object> {
 
   protected less = () => {
     this.props.setLimit(this.props.limit - 1);
+  };
+
+  protected addUser = () => {
+    this.props.addUser({
+      name: chance.name(),
+      age: chance.age(),
+    });
   };
 }
 

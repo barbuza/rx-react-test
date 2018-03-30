@@ -1,23 +1,17 @@
 import { createStore } from "redux";
 
+import { disposeReactor } from "./disposeReactor";
 import { logger } from "./logger";
 import { reactor } from "./reactor";
 import { IReduxState, reducer } from "./reducer";
 
-declare global {
-  // tslint:disable-next-line:interface-name
-  interface Window {
-    reloadStoreState?: IReduxState;
-  }
-}
+const preloadedState = (module.hot && module.hot.data && module.hot.data.state) || undefined;
 
-export const store = reactor(logger<IReduxState>(createStore))(reducer, window.reloadStoreState);
-
-delete window.reloadStoreState;
+export const store = reactor(logger<IReduxState>(createStore))(reducer, preloadedState);
 
 if (module.hot) {
-  module.hot.dispose(() => {
-    store.dispose();
-    window.reloadStoreState = store.getState();
+  module.hot.dispose(data => {
+    store[disposeReactor]();
+    data.state = store.getState();
   });
 }
