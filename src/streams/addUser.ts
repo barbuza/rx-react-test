@@ -32,25 +32,32 @@ async function addUserPromise(db: FirebaseDatabase, user: Omit<Omit<IUser, "id">
     .child(nextId.toString(10))
     .set(user);
 
-  await db
-    .ref("users")
-    .child(nextId.toString())
-    .set(true);
+  const promises: Array<Promise<any>> = [];
+
+  promises.push(
+    db
+      .ref("users")
+      .child(nextId.toString())
+      .set(true),
+  );
 
   if (Math.random() > 0.5) {
-    await db
-      .ref("online")
-      .child(nextId.toString())
-      .set(true);
+    promises.push(
+      db
+        .ref("online")
+        .child(nextId.toString())
+        .set(true),
+    );
   }
+
+  await Promise.all(promises);
 
   return { ...user, id: nextId, online: false };
 }
 
 export function addUserStream(api: IStreamApi<IReduxState>): Subscription {
   return Observable.fromPromise(import("../firebase"))
-    .map(x => x.db)
-    .exhaustMap(db =>
+    .exhaustMap(({ db }) =>
       api.action$
         .filter(isAddUserAction)
         .exhaustMap(action => Observable.fromPromise(addUserPromise(db, action.user)))

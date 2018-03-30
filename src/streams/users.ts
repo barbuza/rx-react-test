@@ -2,6 +2,7 @@ import "rxjs/add/observable/combineLatest";
 import "rxjs/add/observable/fromPromise";
 import "rxjs/add/observable/of";
 import "rxjs/add/operator/distinctUntilChanged";
+import "rxjs/add/operator/exhaustMap";
 import "rxjs/add/operator/map";
 import "rxjs/add/operator/switchMap";
 import { Observable } from "rxjs/Observable";
@@ -64,8 +65,7 @@ const observableUser = (db$: ObservableDb) => (uid: string): Observable<IUser> =
 
 export function usersStream(api: IStreamApi<IReduxState>): Subscription {
   return Observable.fromPromise(import("../firebase"))
-    .map(x => x.db$)
-    .switchMap(db$ =>
+    .exhaustMap(({ db$ }) =>
       api.state$
         .map(userListOptions)
         .distinctUntilChanged(userListOptionsEqual)

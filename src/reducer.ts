@@ -58,9 +58,3 @@ export function reducer(state: IReduxState = defaultState, action: Action) {
   }
   return state;
 }
-
-if (module.hot) {
-  module.hot.dispose(() => {
-    throw new Error("no hmr here");
-  });
-}

@@ -86,7 +86,7 @@ class AppComponent extends React.Component<IReduxState & IAppDispatch, object> {
               <th>&nbsp;</th>
             </tr>
           </thead>
-          <tbody>{users.map(user => <User key={user.id} {...user} />)}</tbody>
+          <tbody>{users.slice(0, limit).map(user => <User key={user.id} {...user} />)}</tbody>
         </table>
         <div>
           <button disabled={adding} onClick={this.addUser}>

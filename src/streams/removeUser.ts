@@ -32,8 +32,7 @@ async function removeUserPromise(db: FirebaseDatabase, id: number): Promise<numb
 
 export function removeUserStream(api: IStreamApi<IReduxState>): Subscription {
   return Observable.fromPromise(import("../firebase"))
-    .map(x => x.db)
-    .exhaustMap(db =>
+    .exhaustMap(({ db }) =>
       api.action$
         .filter(isRemoveUserAction)
         .exhaustMap(action => Observable.fromPromise(removeUserPromise(db, action.id)))
