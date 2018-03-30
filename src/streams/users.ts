@@ -1,13 +1,12 @@
-import "rxjs/add/observable/combineLatest";
-import "rxjs/add/observable/fromPromise";
-import "rxjs/add/observable/of";
-import "rxjs/add/operator/distinctUntilChanged";
-import "rxjs/add/operator/exhaustMap";
-import "rxjs/add/operator/map";
-import "rxjs/add/operator/switchMap";
 import { Observable } from "rxjs/Observable";
+import { combineLatest } from "rxjs/observable/combineLatest";
+import { fromPromise } from "rxjs/observable/fromPromise";
+import { of } from "rxjs/observable/of";
+import { distinctUntilChanged } from "rxjs/operators/distinctUntilChanged";
+import { exhaustMap } from "rxjs/operators/exhaustMap";
+import { map } from "rxjs/operators/map";
+import { switchMap } from "rxjs/operators/switchMap";
 import { Subscription } from "rxjs/Subscription";
-
 import { createSetUsersAction } from "../actions";
 import { IStreamApi } from "../createReactor";
 import { ObservableDb } from "../db";
@@ -55,7 +54,7 @@ const observableUser = (db$: ObservableDb) => (uid: string): Observable<IUser> =
     .child(uid)
     .boolean();
 
-  return Observable.combineLatest(userData$, online$, ({ age, name }, online) => ({
+  return combineLatest(userData$, online$, ({ age, name }, online) => ({
     age,
     name,
     online,
@@ -64,16 +63,17 @@ const observableUser = (db$: ObservableDb) => (uid: string): Observable<IUser> =
 };
 
 export function usersStream(api: IStreamApi<IReduxState>): Subscription {
-  return Observable.fromPromise(import("../firebase"))
-    .exhaustMap(({ db$ }) =>
-      api.state$
-        .map(userListOptions)
-        .distinctUntilChanged(userListOptionsEqual)
-        .switchMap(observableUserList(db$))
-        .switchMap(
-          userIds => (userIds.length ? Observable.combineLatest(userIds.map(observableUser(db$))) : Observable.of([])),
-        )
-        .map(createSetUsersAction),
+  return fromPromise(import("../firebase"))
+    .pipe(
+      exhaustMap(({ db$ }) =>
+        api.state$.pipe(
+          map(userListOptions),
+          distinctUntilChanged(userListOptionsEqual),
+          switchMap(observableUserList(db$)),
+          switchMap(userIds => (userIds.length ? combineLatest(userIds.map(observableUser(db$))) : of([]))),
+          map(createSetUsersAction),
+        ),
+      ),
     )
     .subscribe(api.dispatch);
 }

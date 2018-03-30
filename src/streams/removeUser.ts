@@ -1,9 +1,8 @@
 import { FirebaseDatabase } from "@firebase/database-types";
-import "rxjs/add/observable/fromPromise";
-import "rxjs/add/operator/exhaustMap";
-import "rxjs/add/operator/filter";
-import "rxjs/add/operator/map";
-import { Observable } from "rxjs/Observable";
+import { fromPromise } from "rxjs/observable/fromPromise";
+import { exhaustMap } from "rxjs/operators/exhaustMap";
+import { filter } from "rxjs/operators/filter";
+import { map } from "rxjs/operators/map";
 import { Subscription } from "rxjs/Subscription";
 
 import { createUserRemovedAction, isRemoveUserAction } from "../actions";
@@ -31,12 +30,15 @@ async function removeUserPromise(db: FirebaseDatabase, id: string): Promise<stri
 }
 
 export function removeUserStream(api: IStreamApi<IReduxState>): Subscription {
-  return Observable.fromPromise(import("../firebase"))
-    .exhaustMap(({ db }) =>
-      api.action$
-        .filter(isRemoveUserAction)
-        .exhaustMap(action => Observable.fromPromise(removeUserPromise(db, action.id)))
-        .map(createUserRemovedAction),
+  return fromPromise(import("../firebase"))
+    .pipe(
+      exhaustMap(({ db }) =>
+        api.action$.pipe(
+          filter(isRemoveUserAction),
+          exhaustMap(action => fromPromise(removeUserPromise(db, action.id))),
+          map(createUserRemovedAction),
+        ),
+      ),
     )
     .subscribe(api.dispatch);
 }

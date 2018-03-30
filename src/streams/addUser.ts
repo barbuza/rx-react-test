@@ -1,10 +1,9 @@
 import { FirebaseDatabase } from "@firebase/database-types";
 import { Omit } from "react-redux";
-import "rxjs/add/observable/fromPromise";
-import "rxjs/add/operator/exhaustMap";
-import "rxjs/add/operator/filter";
-import "rxjs/add/operator/map";
-import { Observable } from "rxjs/Observable";
+import { fromPromise } from "rxjs/observable/fromPromise";
+import { exhaustMap } from "rxjs/operators/exhaustMap";
+import { filter } from "rxjs/operators/filter";
+import { map } from "rxjs/operators/map";
 import { Subscription } from "rxjs/Subscription";
 
 import { createUserAddedAction, isAddUserAction } from "../actions";
@@ -47,12 +46,15 @@ async function addUserPromise(db: FirebaseDatabase, user: Omit<IUser, "id" | "on
 }
 
 export function addUserStream(api: IStreamApi<IReduxState>): Subscription {
-  return Observable.fromPromise(import("../firebase"))
-    .exhaustMap(({ db }) =>
-      api.action$
-        .filter(isAddUserAction)
-        .exhaustMap(action => Observable.fromPromise(addUserPromise(db, action.user)))
-        .map(createUserAddedAction),
+  return fromPromise(import("../firebase"))
+    .pipe(
+      exhaustMap(({ db }) =>
+        api.action$.pipe(
+          filter(isAddUserAction),
+          exhaustMap(action => fromPromise(addUserPromise(db, action.user))),
+          map(createUserAddedAction),
+        ),
+      ),
     )
     .subscribe(api.dispatch);
 }
