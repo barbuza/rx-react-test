@@ -12,7 +12,7 @@ import { IStreamApi } from "../createReactor";
 import { IReduxState } from "../reducer";
 import { IUser } from "./users";
 
-async function addUserPromise(db: FirebaseDatabase, user: Omit<Omit<IUser, "id">, "online">): Promise<IUser> {
+async function addUserPromise(db: FirebaseDatabase, user: Omit<IUser, "id" | "online">): Promise<IUser> {
   const id = await db
     .ref("user")
     .push()

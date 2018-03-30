@@ -54,7 +54,7 @@ function mapDispatch(dispatch: Dispatch<IReduxState>): IAppDispatch {
   return {
     setLimit: (limit: number) => dispatch(createSetLimitAction(limit)),
     toggleOnline: () => dispatch(createToggleOnlineAction()),
-    addUser: (user: Omit<Omit<IUser, "id">, "online">) => dispatch(createAddUserAction(user)),
+    addUser: (user: Omit<IUser, "id" | "online">) => dispatch(createAddUserAction(user)),
   };
 }
 

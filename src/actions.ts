@@ -59,10 +59,10 @@ const ADD_USER = "ADD_USER";
 
 export interface IAddUserAction extends Action {
   type: typeof ADD_USER;
-  user: Omit<Omit<IUser, "id">, "online">;
+  user: Omit<IUser, "id" | "online">;
 }
 
-export function createAddUserAction(user: Omit<Omit<IUser, "id">, "online">): IAddUserAction {
+export function createAddUserAction(user: Omit<IUser, "id" | "online">): IAddUserAction {
   return {
     type: ADD_USER,
     user,
