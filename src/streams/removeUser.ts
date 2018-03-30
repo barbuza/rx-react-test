@@ -10,21 +10,21 @@ import { createUserRemovedAction, isRemoveUserAction } from "../actions";
 import { IStreamApi } from "../createReactor";
 import { IReduxState } from "../reducer";
 
-async function removeUserPromise(db: FirebaseDatabase, id: number): Promise<number> {
+async function removeUserPromise(db: FirebaseDatabase, id: string): Promise<string> {
   await Promise.all([
     db
       .ref("users")
-      .child(id.toString())
+      .child(id)
       .remove(),
     db
       .ref("online")
-      .child(id.toString(10))
+      .child(id)
       .remove(),
   ]);
 
   await db
     .ref("user")
-    .child(id.toString(10))
+    .child(id)
     .remove();
 
   return id;

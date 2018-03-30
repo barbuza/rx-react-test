@@ -1,4 +1,4 @@
-import { Action, AnyAction, Dispatch, Reducer, Store, StoreEnhancerStoreCreator } from "redux";
+import { Action, applyMiddleware, Dispatch, Reducer, Store, StoreEnhancerStoreCreator } from "redux";
 import { BehaviorSubject } from "rxjs/BehaviorSubject";
 import { Observable } from "rxjs/Observable";
 import { Subject } from "rxjs/Subject";
@@ -29,19 +29,20 @@ export function isReactorStore<S>(store: Store<S>): store is IReactorStore<S> {
   return disposeReactor in store;
 }
 
+const actionStreamMiddleware = (action$: Subject<Action>) => () => <S>(next: Dispatch<S>) => (action: any) => {
+  const result = next(action);
+  if (typeof action.type === "string") {
+    action$.next(action);
+  }
+  return result;
+};
+
 export function createReactor<S>(...streamCreators: Array<StreamCreator<S>>): ReactorStoreEnhancer<S> {
   return (next: StoreEnhancerStoreCreator<S>): ReactorStoreCreator<S> => {
     return (reducer: Reducer<S>, preloadedState?: S) => {
       const action$ = new Subject<Action>();
-      const wrappedReducer = (state: S, action: AnyAction): S => {
-        const nextState = reducer(state, action);
-        setTimeout(() => {
-          action$.next(action);
-        });
-        return nextState;
-      };
 
-      const store = next(wrappedReducer, preloadedState);
+      const store = applyMiddleware(actionStreamMiddleware(action$))(next)(reducer, preloadedState);
 
       const state$ = new BehaviorSubject(store.getState());
       store.subscribe(() => {

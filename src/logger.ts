@@ -1,25 +1,25 @@
 // tslint:disable:no-console
 
-import { Action, GenericStoreEnhancer, Reducer, StoreEnhancerStoreCreator } from "redux";
+import { applyMiddleware, Dispatch, MiddlewareAPI } from "redux";
+
 import { logDiff } from "./deepDiff";
 
-export const logger: GenericStoreEnhancer = <S>(next: StoreEnhancerStoreCreator<S>): StoreEnhancerStoreCreator<S> => {
-  return (reducer: Reducer<S>, preloadedState?: S) => {
-    const enhancedReducer = (state: S, action: Action): S => {
-      const { type, ...rest } = action;
-      const nextState = reducer(state, action);
-      if (typeof type === "string" && type.indexOf("@@") !== 0) {
-        console.group(`%c%s`, "font-weight: bold", type);
-        console.log("%cpayload %c%o", "font-weight: bold", "", rest);
-        if (state) {
-          console.groupCollapsed("diff");
-          logDiff(state, nextState);
-          console.groupEnd();
-        }
-        console.groupEnd();
-      }
-      return nextState;
-    };
-    return next(enhancedReducer, preloadedState);
-  };
+const loggerMiddleware = <S>(store: MiddlewareAPI<S>) => (next: Dispatch<S>) => (action: any) => {
+  const { type, ...rest } = action;
+  const state = store.getState();
+  const result = next(action);
+  if (typeof type === "string" && type.indexOf("@@") !== 0) {
+    const nextState = store.getState();
+    console.group(`%c%s`, "font-weight: bold", type);
+    console.log("%cpayload %c%o", "font-weight: bold", "", rest);
+    if (state) {
+      console.groupCollapsed("diff");
+      logDiff(state, nextState);
+      console.groupEnd();
+    }
+    console.groupEnd();
+  }
+  return result;
 };
+
+export const logger = applyMiddleware(loggerMiddleware);

@@ -1,4 +1,4 @@
-import { DataSnapshot, FirebaseDatabase } from "@firebase/database-types";
+import { FirebaseDatabase } from "@firebase/database-types";
 import { Omit } from "react-redux";
 import "rxjs/add/observable/fromPromise";
 import "rxjs/add/operator/exhaustMap";
@@ -13,23 +13,14 @@ import { IReduxState } from "../reducer";
 import { IUser } from "./users";
 
 async function addUserPromise(db: FirebaseDatabase, user: Omit<Omit<IUser, "id">, "online">): Promise<IUser> {
-  const ids: DataSnapshot = await db
+  const id = await db
     .ref("user")
-    .orderByKey()
-    .limitToLast(1)
-    .once("value");
-
-  let nextId = 1;
-  ids.forEach(snapshot => {
-    if (snapshot && snapshot.key) {
-      nextId = parseInt(snapshot.key, 10) + 1;
-    }
-    return false;
-  });
+    .push()
+    .then(x => x.key!);
 
   await db
     .ref("user")
-    .child(nextId.toString(10))
+    .child(id)
     .set(user);
 
   const promises: Array<Promise<any>> = [];
@@ -37,7 +28,7 @@ async function addUserPromise(db: FirebaseDatabase, user: Omit<Omit<IUser, "id">
   promises.push(
     db
       .ref("users")
-      .child(nextId.toString())
+      .child(id)
       .set(true),
   );
 
@@ -45,14 +36,14 @@ async function addUserPromise(db: FirebaseDatabase, user: Omit<Omit<IUser, "id">
     promises.push(
       db
         .ref("online")
-        .child(nextId.toString())
+        .child(id)
         .set(true),
     );
   }
 
   await Promise.all(promises);
 
-  return { ...user, id: nextId, online: false };
+  return { ...user, id, online: false };
 }
 
 export function addUserStream(api: IStreamApi<IReduxState>): Subscription {

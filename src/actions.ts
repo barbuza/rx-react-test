@@ -95,14 +95,14 @@ const REMOVE_USER = "REMOVE_USER";
 
 export interface IRemoveUserAction {
   type: typeof REMOVE_USER;
-  id: number;
+  id: string;
 }
 
 export function isRemoveUserAction(action: Action): action is IRemoveUserAction {
   return action.type === REMOVE_USER;
 }
 
-export function createRemoveUserAction(id: number): IRemoveUserAction {
+export function createRemoveUserAction(id: string): IRemoveUserAction {
   return {
     type: REMOVE_USER,
     id,
@@ -113,14 +113,14 @@ const USER_REMOVED = "USER_REMOVED";
 
 export interface IUserRemovedAction {
   type: typeof USER_REMOVED;
-  id: number;
+  id: string;
 }
 
 export function isUserRemovedAction(action: Action): action is IUserRemovedAction {
   return action.type === USER_REMOVED;
 }
 
-export function createUserRemovedAction(id: number): IUserRemovedAction {
+export function createUserRemovedAction(id: string): IUserRemovedAction {
   return {
     type: USER_REMOVED,
     id,

@@ -16,7 +16,7 @@ import { IReduxState } from "../reducer";
 export interface IUser {
   name: string;
   age: number;
-  id: number;
+  id: string;
   online: boolean;
 }
 
@@ -59,7 +59,7 @@ const observableUser = (db$: ObservableDb) => (uid: string): Observable<IUser> =
     age,
     name,
     online,
-    id: parseInt(uid, 10),
+    id: uid,
   }));
 };
 

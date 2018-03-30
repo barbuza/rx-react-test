@@ -1,14 +1,12 @@
-import { Chance } from "chance";
 import * as React from "react";
 import { connect, Omit } from "react-redux";
 import { Dispatch } from "redux";
 
 import { createAddUserAction, createRemoveUserAction, createSetLimitAction, createToggleOnlineAction } from "./actions";
 import * as styles from "./index.css";
+import { randomAge, randomName } from "./random";
 import { IReduxState } from "./reducer";
 import { IUser } from "./streams/users";
-
-const chance = Chance();
 
 interface IUserDispatch {
   removeUser: typeof createRemoveUserAction;
@@ -16,7 +14,7 @@ interface IUserDispatch {
 
 function mapUserDispatch(dispatch: Dispatch<IReduxState>): IUserDispatch {
   return {
-    removeUser: (id: number) => dispatch(createRemoveUserAction(id)),
+    removeUser: (id: string) => dispatch(createRemoveUserAction(id)),
   };
 }
 
@@ -107,8 +105,8 @@ class AppComponent extends React.Component<IReduxState & IAppDispatch, object> {
 
   protected addUser = () => {
     this.props.addUser({
-      name: chance.name(),
-      age: chance.age(),
+      name: randomName(),
+      age: randomAge(),
     });
   };
 }
