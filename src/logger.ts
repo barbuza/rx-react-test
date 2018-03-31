@@ -4,7 +4,7 @@ import { applyMiddleware, Dispatch, MiddlewareAPI } from "redux";
 
 import { logDiff } from "./deepDiff";
 
-const loggerMiddleware = <S>(store: MiddlewareAPI<S>) => (next: Dispatch<S>) => (action: any) => {
+export const loggerMiddleware = <S>(store: MiddlewareAPI<S>) => (next: Dispatch<S>) => (action: any) => {
   const { type, ...rest } = action;
   const state = store.getState();
   const result = next(action);

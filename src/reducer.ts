@@ -36,35 +36,41 @@ export function reducer(state: IReduxState = defaultState, action: Action) {
       loading: false,
       users: action.users,
     };
-  } else if (isToggleOnlineAction(action)) {
+  }
+  if (isToggleOnlineAction(action)) {
     return {
       ...state,
       loading: true,
       onlineOnly: !state.onlineOnly,
     };
-  } else if (isSetLimitAction(action)) {
+  }
+  if (isSetLimitAction(action)) {
     return {
       ...state,
       limit: Math.max(1, Math.min(50, action.limit)),
       loading: true,
     };
-  } else if (isAddUserAction(action)) {
+  }
+  if (isAddUserAction(action)) {
     return {
       ...state,
       adding: state.adding + 1,
       loading: state.limit > state.users.length ? true : state.loading,
     };
-  } else if (isUserAddedAction(action)) {
+  }
+  if (isUserAddedAction(action)) {
     return {
       ...state,
       adding: state.adding - 1,
     };
-  } else if (isRemoveUserAction(action)) {
+  }
+  if (isRemoveUserAction(action)) {
     return {
       ...state,
       removing: [...state.removing, action.id],
     };
-  } else if (isUserRemovedAction(action)) {
+  }
+  if (isUserRemovedAction(action)) {
     return {
       ...state,
       removing: state.removing.filter(x => x !== action.id),
