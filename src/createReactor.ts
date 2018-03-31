@@ -19,7 +19,7 @@ export type ReactorStoreEnhancer<S> = (next: StoreEnhancerStoreCreator<S>) => Re
 
 export interface IStreamApi<S> {
   action$: Observable<Action>;
-  state$: Observable<S>;
+  state$: BehaviorSubject<S>;
   dispatch: Dispatch<S>;
 }
 

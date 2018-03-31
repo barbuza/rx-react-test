@@ -8,6 +8,7 @@ import { Subscription } from "rxjs/Subscription";
 import { createUserRemovedAction, isRemoveUserAction } from "../actions";
 import { IStreamApi } from "../createReactor";
 import { IReduxState } from "../reducer";
+import { mergeConcurrent } from "./mergeConcurrent";
 
 async function removeUserPromise(db: FirebaseDatabase, id: string): Promise<string> {
   await Promise.all([
@@ -35,7 +36,7 @@ export function removeUserStream(api: IStreamApi<IReduxState>): Subscription {
       exhaustMap(({ db }) =>
         api.action$.pipe(
           filter(isRemoveUserAction),
-          exhaustMap(action => fromPromise(removeUserPromise(db, action.id))),
+          mergeConcurrent(3, action => fromPromise(removeUserPromise(db, action.id))),
           map(createUserRemovedAction),
         ),
       ),

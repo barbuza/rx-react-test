@@ -9,6 +9,7 @@ import { Subscription } from "rxjs/Subscription";
 import { createUserAddedAction, isAddUserAction } from "../actions";
 import { IStreamApi } from "../createReactor";
 import { IReduxState } from "../reducer";
+import { mergeConcurrent } from "./mergeConcurrent";
 import { IUser } from "./users";
 
 async function addUserPromise(db: FirebaseDatabase, user: Omit<IUser, "id" | "online">): Promise<IUser> {
@@ -51,7 +52,7 @@ export function addUserStream(api: IStreamApi<IReduxState>): Subscription {
       exhaustMap(({ db }) =>
         api.action$.pipe(
           filter(isAddUserAction),
-          exhaustMap(action => fromPromise(addUserPromise(db, action.user))),
+          mergeConcurrent(3, action => fromPromise(addUserPromise(db, action.user))),
           map(createUserAddedAction),
         ),
       ),
