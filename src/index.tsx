@@ -14,7 +14,10 @@ if (stylesTarget) {
 // tslint:disable-next-line:no-var-requires
 const debug = require("debug")("rx:index");
 
-debug("render app");
+if (module.hot) {
+  debug("render app");
+}
+
 render(
   <Provider store={store}>
     <App />

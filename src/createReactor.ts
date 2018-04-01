@@ -58,7 +58,7 @@ export function createReactor<S>(...streamCreators: Array<StreamCreator<S>>): Re
       const subs: Array<{ sub: Subscription; fn: any }> = [];
       for (const createStream of streamCreators) {
         const name: string | undefined = (createStream as any).name;
-        if (name && name.length) {
+        if (name && name.length >= 2) {
           debug("start %s", name);
         }
         subs.push({
@@ -69,7 +69,7 @@ export function createReactor<S>(...streamCreators: Array<StreamCreator<S>>): Re
       function dispose() {
         for (const sub of subs) {
           const name: string | undefined = sub.fn.name;
-          if (name && name.length) {
+          if (name && name.length >= 2) {
             debug("dispose %s", name);
           }
           sub.sub.unsubscribe();

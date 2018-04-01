@@ -1,8 +1,9 @@
-require("./dist/app");
+require("./dist/App");
 const { readFileSync, writeFileSync } = require("fs");
 const { getStyles } = require("typestyle");
 const posthtml = require("posthtml");
 
+const css = getStyles();
 const html = readFileSync("dist/index.html", "utf-8");
 const result = posthtml()
   .use(tree => {
@@ -16,7 +17,7 @@ const result = posthtml()
             attrs: {
               id: "typestyle",
             },
-            content: getStyles(),
+            content: css,
           },
         ],
       };
@@ -26,3 +27,4 @@ const result = posthtml()
   .process(html, { sync: true }).html;
 
 writeFileSync("dist/index.html", result, "utf-8");
+console.log("css extracted");
