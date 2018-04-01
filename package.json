@@ -3,15 +3,16 @@
   "scripts": {
     "precommit": "tsc --noEmit && lint-staged",
     "start": "rimraf dist && parcel src/index.html",
-    "build":
-      "rimraf dist && parcel build src/index.html && parcel build -t node --no-minify src/components/App.tsx && node extract-css",
+    "build": "rimraf dist && parcel build src/index.html && parcel build -t node --no-minify src/components/App.tsx && node extract-css",
     "serve": "npm run-script build && node serve",
     "lint": "tsc --noEmit && tslint -p tsconfig.json --format stylish",
     "format": "prettier --write *.js src/*.{ts,tsx}",
     "ts": "ts-node -O '{\"module\":\"commonjs\"}'"
   },
   "lint-staged": {
-    "*.{ts,tsx}": ["tslint --format stylish"]
+    "*.{ts,tsx}": [
+      "tslint --format stylish"
+    ]
   },
   "devDependencies": {
     "@types/debug": "0.0.30",
@@ -27,7 +28,6 @@
     "husky": "^0.14.3",
     "lint-staged": "^7.0.0",
     "parcel-bundler": "^1.6.2",
-    "postcss-modules": "^1.1.0",
     "posthtml": "^0.11.3",
     "prettier": "^1.11.1",
     "rimraf": "^2.6.2",

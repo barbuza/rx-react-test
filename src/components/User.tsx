@@ -1,4 +1,4 @@
-import { lightcoral, lightgreen } from "csx";
+import { black, border, lightcoral, lightgreen, params, px } from "csx";
 import * as React from "react";
 import { connect } from "react-redux";
 import { Dispatch } from "redux";
@@ -36,15 +36,25 @@ const offlineStyle = style({
   backgroundColor: lightcoral.toString(),
 });
 
+export const userListCellStyle = style({
+  textAlign: "left",
+  border: border({
+    style: "solid",
+    color: black.toString(),
+    width: px(1),
+  }),
+  padding: params(px(2), px(8)),
+});
+
 class UserComponent extends React.PureComponent<IUser & IUserDispatch & IUserProps, object> {
   public render() {
     const { id, name, age, online, removing } = this.props;
     return (
       <tr className={online ? onlineStyle : offlineStyle}>
-        <td>{id}</td>
-        <td>{name}</td>
-        <td>{age}</td>
-        <td>
+        <td className={userListCellStyle}>{id}</td>
+        <td className={userListCellStyle}>{name}</td>
+        <td className={userListCellStyle}>{age}</td>
+        <td className={userListCellStyle}>
           <button onClick={this.remove} disabled={removing}>
             remove
           </button>

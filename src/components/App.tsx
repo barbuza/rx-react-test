@@ -1,9 +1,7 @@
-import { black, border, params, px } from "csx";
 import * as React from "react";
 import { connect, Omit } from "react-redux";
 import { Dispatch } from "redux";
 import { style } from "typestyle";
-import { CSSProperties } from "typestyle/lib/types";
 
 import {
   createAddUserAction,
@@ -14,7 +12,7 @@ import {
 import { randomAge, randomName } from "../random";
 import { IReduxState } from "../reducer";
 import { IUser } from "../streams/users";
-import { User } from "./User";
+import { User, userListCellStyle } from "./User";
 
 interface IAppDispatch {
   setLimit: typeof createSetLimitAction;
@@ -36,22 +34,8 @@ function mapDispatch(dispatch: Dispatch<IReduxState>): IAppDispatch {
   };
 }
 
-const cellStyle: CSSProperties = {
-  textAlign: "left",
-  border: border({
-    style: "solid",
-    color: black.toString(),
-    width: px(1),
-  }),
-  padding: params(px(2), px(8)),
-};
-
 const userListStyle = style({
   borderCollapse: "collapse",
-  $nest: {
-    th: cellStyle,
-    td: cellStyle,
-  },
 });
 
 class AppComponent extends React.Component<IReduxState & IAppDispatch, object> {
@@ -74,10 +58,10 @@ class AppComponent extends React.Component<IReduxState & IAppDispatch, object> {
         <table className={userListStyle}>
           <thead>
             <tr>
-              <th>id</th>
-              <th>name</th>
-              <th>age</th>
-              <th>&nbsp;</th>
+              <th className={userListCellStyle}>id</th>
+              <th className={userListCellStyle}>name</th>
+              <th className={userListCellStyle}>age</th>
+              <th className={userListCellStyle}>&nbsp;</th>
             </tr>
           </thead>
           <tbody>{users.slice(0, limit).map(user => <User key={user.id} {...user} />)}</tbody>
