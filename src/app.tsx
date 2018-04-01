@@ -1,9 +1,11 @@
+import { lightcoral, lightgreen } from "csx";
 import * as React from "react";
 import { connect, Omit } from "react-redux";
 import { Dispatch } from "redux";
+import { style } from "typestyle";
+import { CSSProperties } from "typestyle/lib/types";
 
 import { createAddUserAction, createRemoveUserAction, createSetLimitAction, createToggleOnlineAction } from "./actions";
-import * as styles from "./index.css";
 import { randomAge, randomName } from "./random";
 import { IReduxState } from "./reducer";
 import { IUser } from "./streams/users";
@@ -28,11 +30,19 @@ function mapUserDispatch(dispatch: Dispatch<IReduxState>): IUserDispatch {
   };
 }
 
+const onlineStyle = style({
+  backgroundColor: lightgreen.toString(),
+});
+
+const offlineStyle = style({
+  backgroundColor: lightcoral.toString(),
+});
+
 class UserComponent extends React.PureComponent<IUser & IUserDispatch & IUserProps, object> {
   public render() {
     const { id, name, age, online, removing } = this.props;
     return (
-      <tr className={online ? styles.online : styles.offline}>
+      <tr className={online ? onlineStyle : offlineStyle}>
         <td>{id}</td>
         <td>{name}</td>
         <td>{age}</td>
@@ -72,6 +82,20 @@ function mapDispatch(dispatch: Dispatch<IReduxState>): IAppDispatch {
   };
 }
 
+const cellStyle: CSSProperties = {
+  textAlign: "left",
+  border: "1px solid black",
+  padding: "2px 8px",
+};
+
+const userListStyle = style({
+  borderCollapse: "collapse",
+  $nest: {
+    th: cellStyle,
+    td: cellStyle,
+  },
+});
+
 class AppComponent extends React.Component<IReduxState & IAppDispatch, object> {
   public render() {
     const { limit, onlineOnly, users, loading, toggleOnline, adding } = this.props;
@@ -89,7 +113,7 @@ class AppComponent extends React.Component<IReduxState & IAppDispatch, object> {
         &nbsp; onlineOnly
         <input type="checkbox" checked={onlineOnly} onChange={toggleOnline} />
         {loading && <>&nbsp;loading</>}
-        <table className={styles.userList}>
+        <table className={userListStyle}>
           <thead>
             <tr>
               <th>id</th>
@@ -107,7 +131,9 @@ class AppComponent extends React.Component<IReduxState & IAppDispatch, object> {
           <button disabled={!!adding} onClick={this.add20Users}>
             add 20 users
           </button>
-          <button onClick={this.removeVisible}>remove visible</button>
+          <button disabled={users.length === 0} onClick={this.removeVisible}>
+            remove visible
+          </button>
         </div>
       </>
     );

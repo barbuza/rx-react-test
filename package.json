@@ -10,9 +10,7 @@
     "ts": "ts-node -O '{\"module\":\"commonjs\"}'"
   },
   "lint-staged": {
-    "*.{ts,tsx}": [
-      "tslint --format stylish"
-    ]
+    "*.{ts,tsx}": ["tslint --format stylish"]
   },
   "devDependencies": {
     "@types/debug": "0.0.30",
@@ -22,6 +20,7 @@
     "@types/react-dom": "^16.0.4",
     "@types/react-redux": "^5.0.15",
     "@types/redux-batched-subscribe": "^0.1.2",
+    "@types/parcel-env": "^0.0.0",
     "express": "^4.16.3",
     "express-static-gzip": "^0.3.2",
     "husky": "^0.14.3",
@@ -40,7 +39,7 @@
     "@firebase/app-types": "^0.1.2",
     "@firebase/database": "^0.2.1",
     "@firebase/database-types": "^0.2.0",
-    "@types/parcel-env": "^0.0.0",
+    "csx": "^8.5.0",
     "debug": "^3.1.0",
     "deep-diff": "^0.3.8",
     "react": "^16.2.0",
@@ -48,6 +47,7 @@
     "react-redux": "^5.0.7",
     "redux": "^3.7.2",
     "redux-batched-subscribe": "^0.1.6",
-    "rxjs": "^5.5.8"
+    "rxjs": "^5.5.8",
+    "typestyle": "^1.7.2"
   }
 }
