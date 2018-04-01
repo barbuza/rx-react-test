@@ -7,7 +7,7 @@
       "rimraf dist && parcel build src/index.html && parcel build -t node --no-minify src/components/App.tsx && node extract-css",
     "serve": "npm run-script build && node serve",
     "lint": "tsc --noEmit && tslint -p tsconfig.json --format stylish",
-    "format": "prettier --write src/*.{ts,tsx,css}",
+    "format": "prettier --write *.js src/*.{ts,tsx}",
     "ts": "ts-node -O '{\"module\":\"commonjs\"}'"
   },
   "lint-staged": {
