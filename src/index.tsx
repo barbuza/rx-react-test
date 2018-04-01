@@ -1,9 +1,15 @@
 import * as React from "react";
 import { render, unmountComponentAtNode } from "react-dom";
 import { Provider } from "react-redux";
+import { setStylesTarget } from "typestyle";
 
-import { App } from "./app";
+import { App } from "./components/App";
 import { store } from "./store";
+
+const stylesTarget = document.getElementById("typestyle");
+if (stylesTarget) {
+  setStylesTarget(stylesTarget);
+}
 
 // tslint:disable-next-line:no-var-requires
 const debug = require("debug")("rx:index");

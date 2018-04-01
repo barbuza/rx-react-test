@@ -1,66 +1,20 @@
-import { lightcoral, lightgreen } from "csx";
+import { black, border, params, px } from "csx";
 import * as React from "react";
 import { connect, Omit } from "react-redux";
 import { Dispatch } from "redux";
 import { style } from "typestyle";
 import { CSSProperties } from "typestyle/lib/types";
 
-import { createAddUserAction, createRemoveUserAction, createSetLimitAction, createToggleOnlineAction } from "./actions";
-import { randomAge, randomName } from "./random";
-import { IReduxState } from "./reducer";
-import { IUser } from "./streams/users";
-
-interface IUserProps {
-  removing: boolean;
-}
-
-interface IUserDispatch {
-  removeUser: typeof createRemoveUserAction;
-}
-
-function mapUsersProps(state: IReduxState, user: IUser): IUserProps {
-  return {
-    removing: state.removing.indexOf(user.id) !== -1,
-  };
-}
-
-function mapUserDispatch(dispatch: Dispatch<IReduxState>): IUserDispatch {
-  return {
-    removeUser: (id: string) => dispatch(createRemoveUserAction(id)),
-  };
-}
-
-const onlineStyle = style({
-  backgroundColor: lightgreen.toString(),
-});
-
-const offlineStyle = style({
-  backgroundColor: lightcoral.toString(),
-});
-
-class UserComponent extends React.PureComponent<IUser & IUserDispatch & IUserProps, object> {
-  public render() {
-    const { id, name, age, online, removing } = this.props;
-    return (
-      <tr className={online ? onlineStyle : offlineStyle}>
-        <td>{id}</td>
-        <td>{name}</td>
-        <td>{age}</td>
-        <td>
-          <button onClick={this.remove} disabled={removing}>
-            remove
-          </button>
-        </td>
-      </tr>
-    );
-  }
-
-  protected remove = () => {
-    this.props.removeUser(this.props.id);
-  };
-}
-
-const User = connect(mapUsersProps, mapUserDispatch)(UserComponent);
+import {
+  createAddUserAction,
+  createRemoveUserAction,
+  createSetLimitAction,
+  createToggleOnlineAction,
+} from "../actions";
+import { randomAge, randomName } from "../random";
+import { IReduxState } from "../reducer";
+import { IUser } from "../streams/users";
+import { User } from "./User";
 
 interface IAppDispatch {
   setLimit: typeof createSetLimitAction;
@@ -84,8 +38,12 @@ function mapDispatch(dispatch: Dispatch<IReduxState>): IAppDispatch {
 
 const cellStyle: CSSProperties = {
   textAlign: "left",
-  border: "1px solid black",
-  padding: "2px 8px",
+  border: border({
+    style: "solid",
+    color: black.toString(),
+    width: px(1),
+  }),
+  padding: params(px(2), px(8)),
 };
 
 const userListStyle = style({
@@ -124,17 +82,15 @@ class AppComponent extends React.Component<IReduxState & IAppDispatch, object> {
           </thead>
           <tbody>{users.slice(0, limit).map(user => <User key={user.id} {...user} />)}</tbody>
         </table>
-        <div>
-          <button disabled={!!adding} onClick={this.addUser}>
-            add user
-          </button>
-          <button disabled={!!adding} onClick={this.add20Users}>
-            add 20 users
-          </button>
-          <button disabled={users.length === 0} onClick={this.removeVisible}>
-            remove visible
-          </button>
-        </div>
+        <button disabled={!!adding} onClick={this.addUser}>
+          add user
+        </button>
+        <button disabled={!!adding} onClick={this.add20Users}>
+          add 20 users
+        </button>
+        <button disabled={users.length === 0} onClick={this.removeVisible}>
+          remove visible
+        </button>
       </>
     );
   }
