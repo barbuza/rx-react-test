@@ -14,6 +14,14 @@ import { IReduxState } from "../reducer";
 import { IUser } from "../streams/users";
 import { User, userListCellStyle } from "./User";
 
+interface IAppProps {
+  loading: boolean;
+  limit: number;
+  onlineOnly: boolean;
+  users: IUser[];
+  removing: string[];
+}
+
 interface IAppDispatch {
   setLimit: typeof createSetLimitAction;
   toggleOnline: typeof createToggleOnlineAction;
@@ -21,8 +29,15 @@ interface IAppDispatch {
   removeUser: typeof createRemoveUserAction;
 }
 
-function mapProps(state: IReduxState): IReduxState {
-  return state;
+function mapProps(state: IReduxState): IAppProps {
+  const { limit, loading, adding, removing, onlineOnly, users } = state;
+  return {
+    limit,
+    onlineOnly,
+    users,
+    removing,
+    loading: loading || !!adding || !!removing.length,
+  };
 }
 
 function mapDispatch(dispatch: Dispatch<IReduxState>): IAppDispatch {
@@ -38,9 +53,9 @@ const userListStyle = style({
   borderCollapse: "collapse",
 });
 
-class AppComponent extends React.Component<IReduxState & IAppDispatch, object> {
+class AppComponent extends React.Component<IAppProps & IAppDispatch, object> {
   public render() {
-    const { limit, onlineOnly, users, loading, toggleOnline, adding } = this.props;
+    const { limit, onlineOnly, users, loading, toggleOnline } = this.props;
 
     return (
       <>
@@ -66,13 +81,13 @@ class AppComponent extends React.Component<IReduxState & IAppDispatch, object> {
           </thead>
           <tbody>{users.slice(0, limit).map(user => <User key={user.id} {...user} />)}</tbody>
         </table>
-        <button disabled={!!adding} onClick={this.addUser}>
+        <button disabled={loading} onClick={this.addUser}>
           add user
         </button>
-        <button disabled={!!adding} onClick={this.add20Users}>
+        <button disabled={loading} onClick={this.add20Users}>
           add 20 users
         </button>
-        <button disabled={users.length === 0} onClick={this.removeVisible}>
+        <button disabled={users.length === 0 || loading} onClick={this.removeVisible}>
           remove visible
         </button>
       </>
